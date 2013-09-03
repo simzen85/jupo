@@ -2161,8 +2161,9 @@ def get_invited_addresses(db_name=None, user_id=None):
     db_name = get_database_name()
   db = DATABASE[db_name]
 
-  # find all email addresses that *NOT YET SIGNED UP BUT ALREADY SENT INVITATION* in network, watchout for group (same table owner, got no email field)
-  # invited_address = owner that got name = NONE (can't use password since new signup workflow doesn't require password)
+  # find all email addresses that *NOT YET SIGNED UP BUT ALREADY SENT INVITATION* in network, 
+  # watchout for group (same table owner, got no email field)
+  # invited_address = owner that got name = NONE
   invited_addresses = [i['email'] for i in db.owner.find({'email': {'$ne': None}, 'name': None, 'ref': user_id} , {'email': True})]
   # print "DEBUG - in get_invited_addresses - invited_addresses = " + str(invited_addresses)
 
