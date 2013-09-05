@@ -1651,8 +1651,16 @@ def contacts():
   session_id = session.get("session_id")
   user_id = api.get_user_id(session_id)
   owner = api.get_user_info(user_id)
-  body = render_template('contacts.html',
-                         owner=owner)
+  
+  call_from = request.args.get('from')
+  
+  if call_from and call_from == 'posting':
+    body = render_template('contacts_posting.html',
+                          owner=owner)
+  else:
+    body = render_template('contacts.html',
+                          owner=owner)
+  
   return Response(dumps({'body': body,
                          'title': 'Contacts'}), 
                   mimetype='application/json')  
