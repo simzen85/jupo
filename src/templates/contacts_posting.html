@@ -14,11 +14,9 @@
       {% if user.email %}
     
         <li>
-          {% if owner.contact_ids | length > 1 %}
           <label class='lfloat'>
             <input type='checkbox' value='{{ user.id }}|{{ user.name }}' class='checkbox-posting' />
           </label>
-          {% endif %}         
 
           <!--
           <a class='button chat rfloat' href='/chat/user/{{ user.id }}'>Start Chat</a>
