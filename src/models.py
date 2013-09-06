@@ -474,6 +474,10 @@ class User(Model):
   @property
   def disabled_notifications(self):
     return self.info.get('disabled_notifications', [])
+
+  @property
+  def ref(self):
+    return self.info.get('ref')
   
 
 class Comment(Model):
