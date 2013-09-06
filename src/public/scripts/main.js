@@ -762,6 +762,7 @@ $(document).ready(function(e) {
       ids = href.split('user_ids=')[1].split(',');
 
       for (var i = 0; i < ids.length; i++) {
+        // note that field id = id|name
         contact_id = ids[i].split('|')[0];
         contact_name = ids[i].split('|')[1];
         $('input[name=viewers]').tokenInput("add", {id: contact_id, name: contact_name});    

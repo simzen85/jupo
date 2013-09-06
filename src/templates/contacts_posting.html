@@ -7,7 +7,23 @@
 </div>
 
 <ul class='people'>
-  {% set contacts = owner.contacts %}
+  {% if groups %}
+    {% for group in groups %}
+      <li>
+        <label class='lfloat'>
+          <input type='checkbox' value='{{ group.id }}|{{ group.name }}' class='checkbox-posting' />
+        </label>
+    
+        <img class='small-avatar lfloat' src='{{ group.logo }}'>
+    
+        <i class="group-icon"></i>
+        <a href='#' class='async user'>{{ group.name }}</a>
+        
+        <br>
+      </li>
+    {% endfor %}
+  {% endif %}
+  {% set contacts = owner.contacts + owner.google_contacts_as_obj %}
   {% if contacts %}
  
     {% for user in contacts %}
@@ -24,8 +40,13 @@
       
           <img class='small-avatar lfloat' src='{{ user.avatar }}'>
       
-          <a href='/user/{{ user.id }}' class='async user'>{{ user.name }}</a>
-          <i class='{{ user.status }}  user-{{ user.id }}-status'></i>
+          {% if user.is_registered() == True %} <!-- registered user -->
+            <a href='/user/{{ user.id }}' class='async user'>{{ user.name }}</a>
+            <i class='{{ user.status }}  user-{{ user.id }}-status'></i>
+          {% else %} <!-- Google contacts -->
+            <a href='#' class='async user'>{{ user.email }}</a>
+            Google contact
+          {% endif %}
           <br>
       
           {% set last_online = user.last_online %}
