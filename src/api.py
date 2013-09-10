@@ -123,6 +123,7 @@ invite_queue = Queue('invite')
 send_mail_queue = Queue('send_mail')
 move_to_s3_queue = Queue('move_to_s3')
 notification_queue = Queue('notification')
+gamification_queue = Queue('gamification')
 
 
 def send_mail(to_addresses, subject=None, body=None, mail_type=None, 
@@ -968,6 +969,9 @@ def complete_profile(code, name, password, gender, avatar):
                                'friend_just_joined', 
                                None, None, db_name=db_name)
   
+  # Gamification - award badge for referer
+  gamification_queue.enqueue(new_gamification, session_id, user['_id'], 'invitation_accepted', user.ref, None, db_name=db_name)
+
   return session_id
 
 def sign_in_with_google(email, name, gender, avatar, 
@@ -1765,6 +1769,27 @@ def is_removed(feed_id):
   if db.stream.find_one({'_id': long(feed_id), 'is_removed': True}):
     return False
   return True
+
+def new_gamification(session_id, receiver, type, 
+                     ref_id=None, ref_collection=None, comment_id=None, db_name=None):
+  if not db_name:
+    db_name = get_database_name()
+  db = DATABASE[db_name]
+  
+  if session_id:
+    sender = get_user_id(session_id, db_name=db_name)
+    if sender:
+      pass
+  
+  if type == 'invitation_accepted':
+    target = get_user_info(ref_id)
+    ui.award_badge(target.email, "Jupo-Influencer-private")
+
+    notification_queue.enqueue(new_notification, 
+                               session_id, target.id, 
+                               'invitation_accepted', 
+                               None, None, db_name=db_name)
+
 
 def new_notification(session_id, receiver, type, 
                      ref_id=None, ref_collection=None, comment_id=None, db_name=None):
