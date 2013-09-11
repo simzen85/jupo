@@ -2345,7 +2345,6 @@ def home():
   
   session_id = request.args.get('session_id')
   
-  
   if hostname != settings.PRIMARY_DOMAIN:
     if not api.is_exists(db_name=hostname.replace('.', '_')):
       abort(404)    

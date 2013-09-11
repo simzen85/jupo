@@ -78,6 +78,8 @@ import app
 import filters
 import settings
 
+from lib.userinfuser import ui_api
+
 requests.adapters.DEFAULT_RETRIES = 3
 months = dict((k,v) for k,v in enumerate(calendar.month_abbr)) 
 
@@ -125,6 +127,9 @@ move_to_s3_queue = Queue('move_to_s3')
 notification_queue = Queue('notification')
 gamification_queue = Queue('gamification')
 
+# Gamification
+if settings.USER_INFUSER_EMAIL:
+  ui = ui_api.UserInfuser(settings.USER_INFUSER_EMAIL, settings.USER_INFUSER_KEY, sync_all=True)
 
 def send_mail(to_addresses, subject=None, body=None, mail_type=None, 
               user_id=None, post=None, db_name=None, **kwargs):
@@ -963,14 +968,20 @@ def complete_profile(code, name, password, gender, avatar):
   
   session_id = info['session_id']
   friends = db.owner.find({'google_contacts': user.email})
-  for user in friends:
+
+  print "DEBUG - in complete_profile - friends = " + str(friends)
+
+  for friend in friends:
+    print "DEBUG - in complete_profile - friend id = " + str(friend['_id'])
     notification_queue.enqueue(new_notification, 
-                               session_id, user['_id'], 
+                               session_id, friend['_id'], 
                                'friend_just_joined', 
                                None, None, db_name=db_name)
   
   # Gamification - award badge for referer
-  gamification_queue.enqueue(new_gamification, session_id, user['_id'], 'invitation_accepted', user.ref, None, db_name=db_name)
+  print "DEBUG - in complete_profile - user.id = " + str(user.id)
+  print "DEBUG - in complete_profile - user.ref = " + str(user.ref)
+  gamification_queue.enqueue(new_gamification, session_id, user.id, 'invitation_accepted', user.ref, None, db_name=db_name)
 
   return session_id
 
@@ -1780,10 +1791,11 @@ def new_gamification(session_id, receiver, type,
     sender = get_user_id(session_id, db_name=db_name)
     if sender:
       pass
-  
+
   if type == 'invitation_accepted':
-    target = get_user_info(ref_id)
-    ui.award_badge(target.email, "Jupo-Influencer-private")
+    target = get_user_info(ref_id, db_name=db_name)
+    
+    ui.award_badge(target.email, "Jupo-Influencerrrr-private")
 
     notification_queue.enqueue(new_notification, 
                                session_id, target.id, 
