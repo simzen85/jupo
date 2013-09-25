@@ -2920,6 +2920,7 @@ div#body section div.attachment, div#overlay section div.attachment {/*   margin
 }
 
 div#body div.file-attachment, div#overlay div.file-attachment {
+  text-align: center;
   /*  margin: 8px 0 2px;*/
   width: 100%;
   /*   text-overflow: ellipsis; */
@@ -3008,9 +3009,11 @@ div.file-attachment > div.title {
 }
 
 div.file-attachment a[rel='gallery'] img {
-  display: block;
+  /* display: block; */
+  display: inline-block;
   max-width: 500px;
   width: auto;
+  max-height: 600px;
 }
 
 ul.comments div.file-attachment a[rel='gallery'] img {
@@ -3020,9 +3023,9 @@ ul.comments div.file-attachment a[rel='gallery'] img {
 div.file-attachment a[rel='gallery'] {
   display: block;
   position: relative;
-  float: left;
+  /* float: left; */
   margin: 4px 6px 3px 0;
-  max-height: 200px;
+  /* max-height: 200px; */
   overflow: hidden;
 }
 
