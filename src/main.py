@@ -127,6 +127,7 @@ def render_homepage(session_id, title, **kwargs):
 
   resp = Response(render_template('home.html', 
                                   owner=owner,
+                                  network=network_info,
                                   title=title, 
                                   groups=groups,
                                   friends_online=friends_online,
@@ -1750,14 +1751,52 @@ def contacts():
 
 
 @app.route("/networks", methods=['OPTIONS'])
+@app.route('/networks/<string:network_id>/update', methods=['POST'])
+@app.route("/networks/<string:network_id>/<view>", methods=['OPTIONS', 'GET'])
 @login_required
-def networks():
+@line_profile
+def networks(network_id=None, view=None):
   session_id = session.get("session_id")
   user_id = api.get_user_id(session_id)
   if not user_id:
     abort(400)
     
   owner = api.get_user_info(user_id)
+  network = api.get_network_by_id(network_id)
+
+  if view in ['edit', 'config']:
+    if request.method == "OPTIONS":
+      resp = {'title': 'Network Configuration',
+              'body': render_template('networks.html',
+                                      mode='edit',
+                                      view='config',
+                                      network=network,
+                                      owner=owner)}
+      return Response(dumps(resp), mimetype='application/json')
+    else:
+      abort(400)
+  elif request.path.endswith('/update'):
+    # network_id = request.form.get('network_id')
+    name = request.form.get('name')
+    description = request.form.get('description')
+
+    auth_normal = request.form.get('auth_normal')
+    auth_google = request.form.get('auth_google')
+    auth_facebook = request.form.get('auth_facebook')
+
+    info = {'name': name,
+            'description': description,
+            'auth_normal': auth_normal,
+            'auth_google': auth_google,
+            'auth_facebook': auth_facebook}
+
+    #fid = request.form.get('fid')
+    #if fid:
+    #  info['avatar'] = long(fid)
+
+    api.update_network_info(network_id, info)
+    return redirect('/news_feed')
+
   resp = {'body': render_template('networks.html', owner=owner),
           'title': 'Networks'}
   return Response(dumps(resp), mimetype='application/json')
@@ -2439,11 +2478,14 @@ def home():
     
     email = request.args.get('email')
     message = request.args.get('message')
+    network_info = api.get_network_by_hostname(hostname)
+
     resp = Response(render_template('landing_page.html',
                                     email=email,
                                     settings=settings,
                                     domain=settings.PRIMARY_DOMAIN,
                                     network=network,
+                                    network_info=network_info,
                                     network_exist=network_exist,
                                     message=message))
     
@@ -3436,9 +3478,7 @@ class NetworkNameDispatcher(object):
     path = environ.get('PATH_INFO', '')
     items = path.lstrip('/').split('/', 1)
 
-    print "DEBUG - in init app - items[0] = " + str(items[0])
     if '.' in items[0] and api.is_domain_name(items[0]):  # is domain name
-      # print "DEBUG - in NetworkNameDispatcher - items = " + items[0]
 
       # save user network for later use
       # session['subnetwork'] = items[0]
@@ -3454,7 +3494,6 @@ class NetworkNameDispatcher(object):
     else:
       request = Request(environ)
       network = request.cookies.get('network')
-      print "DEBUG - in init app - network = " + str(network)
       if not network:
         return self.app(environ, start_response)
 
