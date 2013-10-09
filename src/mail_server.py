@@ -21,7 +21,7 @@ import asyncore
 from lib.email_parser import get_reply_text
 from lib.email_parser import get_reply_and_original_text
 from lib.email_parser import get_subject  
-
+import settings
 
 class JupoSMTPServer(smtpd.SMTPServer):
   def process_message(self, peer, mailfrom, rcpttos, data):
@@ -64,7 +64,8 @@ class JupoSMTPServer(smtpd.SMTPServer):
     elif item_id.startswith('user'):
       user_id = item_id[4:]
     elif item_id.startswith('group'):
-      group_slug = item_id[6:]
+      network_group_slug = item_id[6:]
+      network_slug, group_slug = network_group_slug.split['.']
     else:
       return None
     
@@ -93,11 +94,16 @@ class JupoSMTPServer(smtpd.SMTPServer):
         api.new_comment(session_id, message, post_id, db_name=db_name)
       return None
     elif group_slug:
+      # post from email
       hostname = mailfrom.split('@')[1]
-      db_name = hostname.replace('.', '_') + '_jupo_com'
-#       message, type_message = get_reply_and_original_text(data)
+
+      # construct db_name from network slug + PRIMARY_DOMAIN
+      db_name = network_slug.replace('-', '.') + '.' + settings.PRIMARY_DOMAIN
+      # db_name = hostname.replace('.', '_') + '_jupo_com'
+
+      # message, type_message = get_reply_and_original_text(data)
       
-      #get user id based on email
+      # get user id based on email
       user_id = api.get_user_id_from_email_address(user_email, db_name=db_name)
       if not user_id:
         return None
@@ -105,12 +111,12 @@ class JupoSMTPServer(smtpd.SMTPServer):
       if not session_id:
         return None
 
-      #get group id based on group slug
+      # get group id based on group slug
       group_id = api.get_group_id_from_group_slug(group_slug, db_name=db_name)
       if not group_id:
         return None
 
-      #ensure the string is in Unicode
+      # ensure the string is in Unicode
       if isinstance(message, str):
         try:
           message.decode('utf-8')
@@ -121,7 +127,7 @@ class JupoSMTPServer(smtpd.SMTPServer):
       
       if isinstance(subject, str):
         try:
-          print "DEBUG - subject = " + subject.encode('utf-8')
+          # print "DEBUG - subject = " + subject.encode('utf-8')
           subject.decode('utf-8')
         except UnicodeDecodeError:
           subject = subject.decode('iso-8859-1', 'ignore').encode('utf-8')
@@ -130,8 +136,8 @@ class JupoSMTPServer(smtpd.SMTPServer):
       if type_message is None:
         message = "<b>" + subject + "</b>" + "\n" + message
         
-      #check for mention in message/subject
-      #SO: http://stackoverflow.com/questions/2304632/regex-for-twitter-username
+      # check for mention in message/subject
+      # SO: http://stackoverflow.com/questions/2304632/regex-for-twitter-username
       target = []
       mentioned_found = re.findall('(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)', message)
       #print "DEBUG - mail_server.py - qty mentioned_found = " + len(mentioned_found.group)
@@ -139,8 +145,8 @@ class JupoSMTPServer(smtpd.SMTPServer):
       if len(mentioned_found) > 0:
         for record in mentioned_found:
           nickname = str(record)
-          print "DEBUG - mail_server.py - mentioned_found = " + nickname
-          print "DEBUG - mail_server.py - user_id = " + str(api.get_user_id_from_nickname(nickname[1:]))
+          # print "DEBUG - mail_server.py - mentioned_found = " + nickname
+          # print "DEBUG - mail_server.py - user_id = " + str(api.get_user_id_from_nickname(nickname[1:]))
 
           if api.get_user_id_from_nickname(nickname[1:]) is not None:
             target.append(api.get_user_id_from_nickname(nickname[1:]))

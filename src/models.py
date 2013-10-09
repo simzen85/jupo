@@ -843,13 +843,20 @@ class Group(Model):
   def name(self):
     return self.info.get('name')
 
+  # network based on db_name and settings.PRIMARY_DOMAIN
+  @property
+  def network(self):
+    return self.info.get('network')
+
   @property
   def slug(self):
     return slugify_ext(self.info.get('name'))
 
   @property
   def posting_email(self):
-    return "group-" + self.slug + "@reply.jupo.com" #TODO: hardcode for now, will fix later once we finished register by seperate domains
+    # format : group-[network domain]-[group name]@reply.jupo.com
+    # TODO : support different email domains, right now fixed to reply.jupo.com
+    return "group-" + str(self.network.replace('.', '-')) + "." + str(self.slug) + "@reply.jupo.com"
   
   @property
   def logo(self):    

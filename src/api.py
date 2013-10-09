@@ -2584,8 +2584,8 @@ def new_post_from_email(message_id, receivers, sender,
           
   return True
 
-def new_feed(session_id, message, html=None, viewers,
-             attachments=[], facebook_access_token=None, target_db_name=None):
+def new_feed(session_id, message, viewers,
+             attachments=[], facebook_access_token=None, target_db_name=None, html=None):
 
   # usually when users visit this page, Jupo can detect DB name based on hostname
   # however, for processing email, it runs by itself --> no hostname --> manually provide target_db_name
@@ -4841,7 +4841,13 @@ def update_group_info(session_id, group_id, info):
     info['members'] = [long(i) for i in info.get('members')]
   
   # generate slug based on name
-  info['slug'] = slugify_ext(info['name'])
+  if info.has_key('name'):
+    info['slug'] = slugify_ext(info['name'])
+
+  # generate network based on hostname and settings.PRIMARY_DOMAIN
+  hostname = request.headers.get('Host', '').split(':')[0]
+  network = hostname[:(len(hostname) - len(settings.PRIMARY_DOMAIN) - 1)]
+  info['network'] = network
 
   db.owner.update({'leaders': user_id,
                    '_id': long(group_id)}, {'$set': info})

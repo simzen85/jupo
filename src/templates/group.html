@@ -406,9 +406,9 @@
 
           <div class='stats'>
             {% if group.id != 'public' %}
-            <span class='gray'>
-              <a href='mailto:{{ group.posting_email }}' target='_blank' class='gray'>{{ group.posting_email }}</a>
-            </span>
+              <span class='gray'>
+                <a href='mailto:{{ group.posting_email }}' target='_blank' class='gray'>{{ group.posting_email }}</a> <br/>
+              </span>
             {% endif %}
 
             {% if group.id == 'public' %}

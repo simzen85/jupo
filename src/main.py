@@ -2174,7 +2174,16 @@ def group(group_id=None, view='group', page=1):
       return resp
     
   
-  group = api.get_group_info(session_id, group_id)  
+  group = api.get_group_info(session_id, group_id)
+
+  # populate group.network if needed, for legacy groups (that got no field named 'network')
+  if group.network is None:
+    # update network right away - support legacy
+    api.update_group_info(session_id, group_id, info=dict())
+
+    # refresh the group
+    group = api.get_group_info(session_id, group_id)
+
   if view == 'edit':
     resp = {'title': 'Group Settings',
             'body': render_template('group.html',
@@ -2267,8 +2276,10 @@ def group(group_id=None, view='group', page=1):
       else:
 #        upcoming_events = api.get_upcoming_events(session_id, group_id)
       
-        
-        resp = {'title': group.name, 
+
+
+
+        resp = {'title': group.name,
                 'body': render_template('group.html', 
                                         feeds=feeds, 
                                         group=group,
