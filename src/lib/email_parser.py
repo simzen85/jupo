@@ -109,6 +109,7 @@ def fix_unclosed_tags(html):
   return unescape(out)
 
 def get_text(html):
+  print "DEBUG - in email_parser - get_text - html = " + str(html)
   """
   Strip signatures and replies from emails
   """
@@ -213,6 +214,7 @@ def get_reply_text(data):
   """
 
   msg = email.message_from_string(data)
+  print "DEBUG - in email_parser - get_reply_text - msg = " + str(msg)
   msg_type = None
   message_plain_text = None
   message_html = None
