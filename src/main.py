@@ -2566,7 +2566,6 @@ def group(group_id=None, view='group', page=1):
                                         owner=owner,
                                         settings=settings,
 #                                        upcoming_events=upcoming_events,
-                                        group_facebook_import_info='Test',
                                         view=view)}
         
         json = dumps(resp)
